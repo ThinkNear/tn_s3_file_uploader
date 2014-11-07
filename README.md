@@ -1,5 +1,7 @@
 tn_s3_file_uploader
 ===================
+[![Gem Version](https://badge.fury.io/rb/tn_s3_file_uploader.svg)](http://badge.fury.io/rb/tn_s3_file_uploader)
+-------
 
 Introduction
 ------------
