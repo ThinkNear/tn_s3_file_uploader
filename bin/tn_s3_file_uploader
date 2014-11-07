@@ -1,0 +1,11 @@
+#!/usr/bin/env ruby
+require 'tn_s3_file_uploader'
+
+# Executable - usage tn_s3_file_uploader --input-file-pattern='<<pattern matching file to be uploaded>>'
+# --s3-output-pattern=<<S3 destination folder>>
+#
+# e.g. tn_s3_file_uploader --input-file-pattern='/etc/sonarqube/logs/*.log'
+# --s3-output-pattern=bucket/sonarqube/%{file-extension}/y=%Y/m=%m/d=%d/h=%H/%{file-name}.%{file-extension}
+options = TnS3FileUploader::CliParser.new.parse_cmd_line(ARGV)
+TnS3FileUploader::Runner.new(options).run
+
