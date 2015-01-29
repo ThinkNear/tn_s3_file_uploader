@@ -18,6 +18,8 @@ module TnS3FileUploader
       @s3_file = S3.new(@s3_client)
 
       allow(@s3_client).to receive(:buckets).and_return(@s3_bucket_collection)
+
+      @s3_file.stub(:sleep)
     end
 
     describe "#upload_file" do
@@ -47,8 +49,8 @@ module TnS3FileUploader
             allow(@s3_object).to receive(:write).and_raise(IOError)
           end
           it "should retry 3 times on error" do
-            expect(@s3_client.config.credential_provider).to receive(:refresh).exactly(2).times
-            expect(@s3_file).to receive(:upload).exactly(3).times.and_call_original
+            expect(@s3_client.config.credential_provider).to receive(:refresh).exactly(3).times
+            expect(@s3_file).to receive(:upload).exactly(4).times.and_call_original
 
             expect {
               @s3_file.upload_file(@local_file_path, @bucket, @s3_output_path)

@@ -7,7 +7,7 @@ module TnS3FileUploader
 
   class S3
 
-    MAX_RETRIES = 2
+    MAX_RETRIES = 3
 
     def initialize(s3_client)
       @s3_client = s3_client
@@ -41,7 +41,7 @@ module TnS3FileUploader
         if retry_count < MAX_RETRIES
           #This fixes a bug where the credentials may have rotated on the EC2 instance but the old values
           #are still cached
-          sleep 1
+          sleep 10
           @s3_client.config.credential_provider.refresh
           upload(bucket, dest_full_path, file, retry_count + 1)
         else
