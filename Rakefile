@@ -15,7 +15,6 @@ task :tests => [ :spec, :features ]
 # 'rake build' to build gem in pkg directory
 # 'rake install' to build gem and install it locally
 # 'rake release' to release gem and upload to RubyGems.org
-Bundler::GemHelper.install_tasks
 
 # 'rake clean' deletes pkg directory
 CLEAN.add 'pkg'
