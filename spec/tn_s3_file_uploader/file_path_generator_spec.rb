@@ -16,7 +16,7 @@ module TnS3FileUploader
     end
     describe "#dest_full_path_for" do
       before do
-        IPSocket.stub(:getaddress).and_return('10.0.0.1')
+        FilePathGenerator.any_instance.stub(:local_ip).and_return('10.0.0.1')
         @time = Time.utc(2014, 6, 8, 6, 9, 0)
         @file = '/path/to/bids.log.1.gz'
       end
@@ -232,6 +232,62 @@ module TnS3FileUploader
             expect(@actual_file_timestamp).to eql(@expected_timestamp)
           end
         end
+      end
+    end
+    
+    describe "#local_ip" do
+      context "when udp and hostname resolvement fails" do
+        before do
+          time = Time.utc(2014, 6, 18, 0, 1, 0)
+          @file_path = FilePathGenerator.new(time, { :s3_output_pattern => @s3_timestamp_pattern,
+                                                     :file_timestamp_resolution => 300,
+                                                     :udp_resolve_ip => '10.100.1.1' } )
+          
+          @file_path.stub(:udp_resolve_ip).and_return('a.b.c.d')
+          @file_path.stub(:hostname_resolve_ip).and_return('a.b.c.d')
+          
+          @expected_ip = '0.0.0.0'
+          @actual_ip = @file_path.send(:local_ip)
+        end
+        
+        it "should return a default ip" do
+          expect(@actual_ip).to eql(@expected_ip)
+        end
+      end
+    end
+    
+    context "when udp fails and hostname resolvement succesds" do
+      before do
+        time = Time.utc(2014, 6, 18, 0, 1, 0)
+        @file_path = FilePathGenerator.new(time, { :s3_output_pattern => @s3_timestamp_pattern,
+                                                   :file_timestamp_resolution => 300,
+                                                   :udp_resolve_ip => '10.100.1.1' } )
+        @file_path.stub(:udp_resolve_ip).and_return('a.b.c.d')
+        @file_path.stub(:hostname_resolve_ip).and_return('10.0.0.1')
+
+        @expected_ip = '10.0.0.1'
+        @actual_ip = @file_path.send(:local_ip)
+      end
+      
+      it "should return hostname resolved ip" do
+        expect(@actual_ip).to eql(@expected_ip)
+      end
+    end
+    
+    context "when udp resolvement succeeds" do
+      before do
+        time = Time.utc(2014, 6, 18, 0, 1, 0)
+        @file_path = FilePathGenerator.new(time, { :s3_output_pattern => @s3_timestamp_pattern,
+                                                   :file_timestamp_resolution => 300,
+                                                   :udp_resolve_ip => '10.100.1.1' } )
+        @file_path.stub(:udp_resolve_ip).and_return('10.0.1.1')
+
+        @expected_ip = '10.0.1.1'
+        @actual_ip = @file_path.send(:local_ip)
+      end
+      
+      it "should return udp resolved ip" do
+        expect(@actual_ip).to eql(@expected_ip)
       end
     end
 

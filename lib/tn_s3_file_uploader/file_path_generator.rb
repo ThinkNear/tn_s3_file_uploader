@@ -63,6 +63,54 @@ module TnS3FileUploader
       end
     end
 
+    # First tries to find local IP using UDPSocket technique.
+    # In the event of a failure, we will revert to using the old
+    # method of local ip retrieval.  In the event that both techniques
+    # fail, we return a default value
+    def local_ip
+      resolve_ip = @options[:udp_resolve_ip]
+      ip_address = nil
+      
+      unless resolve_ip.nil?
+        ip_address = udp_resolve_ip(resolve_ip)
+      end
+
+      unless ip_address.nil? or valid_ip?(ip_address)
+        ip_address = hostname_resolve_ip
+      end
+
+      unless valid_ip?(ip_address)
+        ip_address = '0.0.0.0'
+      end
+      
+      ip_address
+    end
+
+    # Finds public local IP by tracing a UDP route.
+    # Note: This code does NOT make a connection or send any packets to the listed resolve_ip
+    # UDP is a stateless protocol, the connect method makes
+    # a system call to determine packet routing based on address and what interface it
+    # should bind to. addr returns an array containing the family, local port and local address
+    # The local address is the last element in the addr array.
+    def udp_resolve_ip(resolve_ip)
+      orig, Socket.do_not_reverse_lookup = Socket.do_not_reverse_lookup, true
+
+      UDPSocket.open do |s|
+        s.connect resolve_ip, 1
+        s.addr.last
+      end
+    ensure
+      Socket.do_not_reverse_lookup = orig
+    end
+    
+    def hostname_resolve_ip
+      IPSocket.getaddress(Socket.gethostname)
+    end
+
+    def valid_ip?(resolve_ip)
+      resolve_ip =~ /\d+\.\d+\.\d+\.\d+/
+    end
+
     def build_substitutions(file)
       file_components = file.split('/').last.split('.')
 
@@ -73,8 +121,9 @@ module TnS3FileUploader
         file_name = file_components[0..-2].join('.')
         file_extension = file_components.last
       end
-
-      ip_address = IPSocket.getaddress(Socket.gethostname).gsub('.', '-')
+      
+      ip_address = local_ip.gsub('.', '-')
+      
       file_timestamp = generate_file_timestamp
 
       {
