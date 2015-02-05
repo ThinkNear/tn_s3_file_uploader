@@ -6,7 +6,7 @@ require 'tn_s3_file_uploader/file_path_generator'
 
 Before do
   @ip_address = '10-0-0-1'
-  IPSocket.stub(:getaddress).and_return('10.0.0.1')
+  TnS3FileUploader::FilePathGenerator.any_instance.stub(:local_ip).and_return('10.0.0.1')
   @s3_client = AWS::S3.new(
       :access_key_id =>ENV['AWS_ACCESS_KEY_ID'],
       :secret_access_key => ENV['AWS_SECRET_KEY'],
