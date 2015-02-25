@@ -24,8 +24,11 @@ module TnS3FileUploader
 
       file_path = Pathname.new(file)
       raise ArgumentError, "#{file} is not a valid file" unless file_path.exist? && file_path.file?
-
+      begin
       upload(bucket, dest_path, file)
+      rescue StandardError, Timeout::Error => e
+        raise e
+      end
     end
 
     private
@@ -49,7 +52,6 @@ module TnS3FileUploader
         end
       end
     end
-
   end
 
 end

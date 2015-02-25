@@ -20,7 +20,8 @@ module TnS3FileUploader
       {
           :input_file_pattern => input_file_pattern,
           :s3_output_pattern => s3_output_pattern,
-          :file_timestamp_resolution => 300
+          :file_timestamp_resolution => 300,
+          :delete_log_files_flag => true
       }
     end
 
@@ -81,11 +82,18 @@ module TnS3FileUploader
           IPSocket.stub(:getaddress).and_return('10.0.0.1')
 
           allow(Dir).to receive(:[]).with(@file_pattern).and_return([ @file_to_upload_1, @file_to_upload_2])
+
+          expect(@s3).to receive(:upload_file).once.with(@file_to_upload_1, 'bucket', @file_to_upload_1)
+          expect(@s3).to receive(:upload_file).once.with(@file_to_upload_2, 'bucket', @file_to_upload_2)
         end
 
         it "should call the s3 client for all matched input files" do
-          expect(@s3).to receive(:upload_file).once.with(@file_to_upload_1, 'bucket', @file_to_upload_1)
-          expect(@s3).to receive(:upload_file).once.with(@file_to_upload_2, 'bucket', @file_to_upload_2)
+          @log_uploader.upload_log_files(params(@file_pattern, @s3_output_pattern))
+        end
+
+        it "should delete the log files" do
+          expect(@log_uploader).to receive(:delete_file).once.with(@file_to_upload_1)
+          expect(@log_uploader).to receive(:delete_file).once.with(@file_to_upload_2)
 
           @log_uploader.upload_log_files(params(@file_pattern, @s3_output_pattern))
         end

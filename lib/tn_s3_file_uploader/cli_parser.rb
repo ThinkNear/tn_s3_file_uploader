@@ -24,6 +24,12 @@ module TnS3FileUploader
           options[:s3_output_pattern] = s3_output_pattern
         end
 
+        options[:delete_log_files_flag] = false
+        opts.on("-d", "--delete-log-files [DELETE_LOG_FILES]", "The flag for deleting log files"\
+            "It is an optional parameter, default is false, decides if log files are deleted after successful upload") do |delete_log_files_flag|
+          options[:delete_log_files_flag] = delete_log_files_flag
+        end
+
         options[:file_timestamp_resolution] = 300
         opts.on("--file-timestamp-resolution RES", Integer, "The resolution of the destination filename in seconds (positive non-zero integer)") do |file_timestamp_resolution|
           if valid_seconds?(file_timestamp_resolution)
