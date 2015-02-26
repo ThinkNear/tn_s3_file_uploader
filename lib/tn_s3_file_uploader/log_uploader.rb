@@ -32,7 +32,14 @@ module TnS3FileUploader
         puts "Found log file #{ log_file }, formatting file name for upload to S3 bucket #{ bucket } into folder #{ destination_full_path }"
 
         # Note no leading or trailing slashes - this will break the upload to S3 (see our s3.rb)
-        @s3.upload_file(log_file, bucket, destination_full_path)
+        begin
+          @s3.upload_file(log_file, bucket, destination_full_path)
+          if options[:delete_log_files_flag]
+            delete_file(log_file)
+          end
+        rescue StandardError, Timeout::Error => e
+          raise e
+        end
       end
 
     end
@@ -58,6 +65,11 @@ module TnS3FileUploader
 
     def blank?(str)
       str.nil? || str == ""
+    end
+
+    def delete_file(file)
+      file_path = Pathname.new(file)
+      File.delete(file) if file_path.file?
     end
   end
 
