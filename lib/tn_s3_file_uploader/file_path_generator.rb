@@ -15,10 +15,9 @@ module TnS3FileUploader
   # date = Wed Jun 18 19:03:40 UTC 2014
   class FilePathGenerator
 
-    def initialize(time, options)
+    def initialize(options)
       #Find the last rotation window
       @options = options
-      @time = previous_rotation_window(time)
     end
 
 
@@ -26,15 +25,15 @@ module TnS3FileUploader
     # Assumes input file 'file' and s3_output_pattern option are both valid.
     # This method removes the bucket (everything until the first '/', including the '/') from the s3_output_pattern
     # while applying the datetime/macro/substitutions
-    def dest_full_path_for(file)
-
+    def dest_full_path_for(time, file)
+      time = previous_rotation_window(time)
       output_file_pattern = remove_bucket(@options[:s3_output_pattern])
 
       # Time#strftime is removing '%' characters on our macros. Our macro substitution must run first
-      subs = build_substitutions(file)
+      subs = build_substitutions(file, time)
       replace_macros!(output_file_pattern, subs)
 
-      substitute_datetime_macros(output_file_pattern)
+      substitute_datetime_macros(time, output_file_pattern)
     end
 
     private
@@ -48,13 +47,13 @@ module TnS3FileUploader
     #  Given s3_output_pattern y=%Y/m=%m/d=%d/h=%H
     #  and time: Thu Jun 12 23:57:49 UTC 2014
     #  it will produce the following folder structure: y=2014/m=06/d=12/h=23
-    def substitute_datetime_macros(output_pattern)
-      @time.strftime(output_pattern)
+    def substitute_datetime_macros(time, output_pattern)
+      time.strftime(output_pattern)
     end
 
     # Generates rounded off timestamp based on rotation_seconds
-    def generate_file_timestamp
-      @time.strftime('%Y%m%d%H%M%S')
+    def generate_file_timestamp(time)
+      time.strftime('%Y%m%d%H%M%S')
     end
 
     def replace_macros!(output_file_pattern, subs)
@@ -111,7 +110,7 @@ module TnS3FileUploader
       resolve_ip =~ /\d+\.\d+\.\d+\.\d+/
     end
 
-    def build_substitutions(file)
+    def build_substitutions(file, time)
       file_components = file.split('/').last.split('.')
 
       if file_components.size == 1
@@ -124,7 +123,7 @@ module TnS3FileUploader
       
       ip_address = local_ip.gsub('.', '-')
       
-      file_timestamp = generate_file_timestamp
+      file_timestamp = generate_file_timestamp(time)
 
       {
           '%{file-name}' => file_name,
