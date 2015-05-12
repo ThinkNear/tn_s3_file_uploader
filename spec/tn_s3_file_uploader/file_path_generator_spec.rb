@@ -24,12 +24,12 @@ module TnS3FileUploader
       context "when the specified time partition includes minute" do
         it "should include minute in the path" do
           time = Time.utc(2014, 6, 18, 0, 1, 2)
-          @file_path = FilePathGenerator.new(time, {
+          @file_path = FilePathGenerator.new( {
               :s3_output_pattern => "bucket/y=%Y/m=%m/d=%d/h=%H/mm=00",
               :file_timestamp_resolution => 300
           } )
 
-          @partition_path = @file_path.dest_full_path_for(@default_input_file)
+          @partition_path = @file_path.dest_full_path_for(time, @default_input_file)
           expect(@partition_path).to eql("y=2014/m=06/d=17/h=23/mm=00")
         end
       end
@@ -37,12 +37,12 @@ module TnS3FileUploader
       context "when the partition has full words" do
         it "should include them in the partition path" do
           time = Time.utc(2014, 6, 18, 0, 1, 2)
-          @file_path = FilePathGenerator.new(time, {
+          @file_path = FilePathGenerator.new( {
               :s3_output_pattern => "bucket/year=%Y/month=%m/day=%d/hour=%H",
               :file_timestamp_resolution => 300
           } )
 
-          @partition_path = @file_path.dest_full_path_for(@default_input_file)
+          @partition_path = @file_path.dest_full_path_for(time, @default_input_file)
           expect(@partition_path).to eql("year=2014/month=06/day=17/hour=23")
         end
       end
@@ -50,10 +50,10 @@ module TnS3FileUploader
       context "when specified time of 5 mins prior is the previous day " do
         before do
           time = Time.utc(2014, 6, 18, 0, 1, 2)
-          @file_path = FilePathGenerator.new(time, @params_with_default_s3_pattern)
+          @file_path = FilePathGenerator.new( @params_with_default_s3_pattern)
           @expected_path = "y=2014/m=06/d=17/h=23"
 
-          @partition_path = @file_path.dest_full_path_for('path/for/some-file.tar.gz')
+          @partition_path = @file_path.dest_full_path_for(time, 'path/for/some-file.tar.gz')
         end
 
         it "should return the correct partition " do
@@ -65,9 +65,9 @@ module TnS3FileUploader
         before do
           time = Time.utc(2014, 1, 1, 0, 2, 2)
           @expected_path = "y=2013/m=12/d=31/h=23"
-          @file_path = FilePathGenerator.new(time, @params_with_default_s3_pattern)
+          @file_path = FilePathGenerator.new( @params_with_default_s3_pattern)
 
-          @partition_path = @file_path.dest_full_path_for(@default_input_file)
+          @partition_path = @file_path.dest_full_path_for(time, @default_input_file)
         end
 
         it "should return the correct partition" do
@@ -79,9 +79,9 @@ module TnS3FileUploader
         before do
           time = Time.utc(2014, 6, 18, 7, 50, 2)
           @expected_path = "y=2014/m=06/d=18/h=07"
-          @file_path = FilePathGenerator.new(time, @params_with_default_s3_pattern)
+          @file_path = FilePathGenerator.new( @params_with_default_s3_pattern)
 
-          @partition_path = @file_path.dest_full_path_for(@default_input_file)
+          @partition_path = @file_path.dest_full_path_for(time, @default_input_file)
         end
 
         it "should return the correct partition" do
@@ -93,9 +93,9 @@ module TnS3FileUploader
         before do
           time = Time.utc(2014, 6, 18, 7, 2, 2)
           @expected_path = "y=2014/m=06/d=18/h=06"
-          @file_path = FilePathGenerator.new(time, @params_with_default_s3_pattern)
+          @file_path = FilePathGenerator.new(@params_with_default_s3_pattern)
 
-          @partition_path = @file_path.dest_full_path_for(@default_input_file)
+          @partition_path = @file_path.dest_full_path_for(time, @default_input_file)
         end
 
         it "should return the correct partition" do
@@ -106,14 +106,14 @@ module TnS3FileUploader
       context "when an output file pattern macro is given" do
         before do
           @expected_file_name = "10-0-0-1.#{@file_timestamp}.bids.log.1.gz"
-          @file_path = FilePathGenerator.new(@time, {
+          @file_path = FilePathGenerator.new( {
               :s3_output_pattern => "bucket/%{ip-address}.%{file-timestamp}.%{file-name}.%{file-extension}",
               :file_timestamp_resolution => 300
           })
         end
 
         it "substitutes the macros and generates output file name based on the provided pattern" do
-          actual_file_name = @file_path.dest_full_path_for(@file)
+          actual_file_name = @file_path.dest_full_path_for(@time, @file)
           expect(actual_file_name).to eql(@expected_file_name)
         end
       end
@@ -122,14 +122,14 @@ module TnS3FileUploader
         before do
           @expected_file_name = "filename.#{@file_timestamp}"
           @file = 'filename'
-          @file_path = FilePathGenerator.new(@time, {
+          @file_path = FilePathGenerator.new( {
               :s3_output_pattern => "bucket/%{file-name}.%{file-timestamp}%{file-extension}",
               :file_timestamp_resolution => 300
           })
         end
 
         it "substitutes the resulting filename as if extension is empty" do
-          actual_file_name = @file_path.dest_full_path_for(@file)
+          actual_file_name = @file_path.dest_full_path_for(@time, @file)
           expect(actual_file_name).to eql(@expected_file_name)
         end
       end
@@ -148,12 +148,12 @@ module TnS3FileUploader
           before do
             time = Time.utc(2014, 6, 18, 20, 50, 2 * partition_seconds - 1)
             @expected_timestamp = "20140618205000"
-            @file_path = FilePathGenerator.new(time, {
+            @file_path = FilePathGenerator.new( {
                 :s3_output_pattern => @s3_timestamp_pattern,
                 :file_timestamp_resolution => partition_seconds
             } )
 
-            @actual_file_timestamp = @file_path.dest_full_path_for(@default_input_file)
+            @actual_file_timestamp = @file_path.dest_full_path_for(time, @default_input_file)
           end
 
           it "should round to exact seconds 00 for a #{partition_seconds} seconds window" do
@@ -175,12 +175,11 @@ module TnS3FileUploader
           before do
             time_a_second_after_minute = Time.utc(2014, 6, 18, 20, 5, 1)
             @expected_result = expected_timestamp
-            @file_path = FilePathGenerator.new(time_a_second_after_minute,
-                                                             {
-                                                                 :s3_output_pattern => @s3_timestamp_pattern,
-                                                                 :file_timestamp_resolution => partition_seconds } )
+            @file_path = FilePathGenerator.new( {
+                                                    :s3_output_pattern => @s3_timestamp_pattern,
+                                                    :file_timestamp_resolution => partition_seconds } )
 
-            @actual_file_timestamp = @file_path.dest_full_path_for(@default_input_file)
+            @actual_file_timestamp = @file_path.dest_full_path_for(time_a_second_after_minute, @default_input_file)
           end
 
           it "should return timestamp #{@expected_result} for a #{partition_seconds} seconds window" do
@@ -201,12 +200,12 @@ module TnS3FileUploader
         partitions_to_expected_timestamp.each do |partition_minutes, expected_timestamp|
           before do
             time = Time.utc(2014, 6, 18, 0, 1, 0)
-            @file_path = FilePathGenerator.new(time, {
+            @file_path = FilePathGenerator.new( {
                 :s3_output_pattern => @s3_timestamp_pattern,
                 :file_timestamp_resolution => partition_minutes
             } )
             @expected_result = expected_timestamp
-            @actual_file_timestamp = @file_path.dest_full_path_for(@default_input_file)
+            @actual_file_timestamp = @file_path.dest_full_path_for(time, @default_input_file)
           end
 
           it "should return #{@expected_result} for a #{partition_minutes / 60} minutes window" do
@@ -222,10 +221,10 @@ module TnS3FileUploader
           before do
             time = Time.utc(2014, 6, 18, 15, 0, partition_seconds)
             @expected_timestamp = "20140618150000"
-            @file_path = FilePathGenerator.new(time, { :s3_output_pattern => @s3_timestamp_pattern,
+            @file_path = FilePathGenerator.new({ :s3_output_pattern => @s3_timestamp_pattern,
                                                                      :file_timestamp_resolution => partition_seconds } )
 
-            @actual_file_timestamp = @file_path.dest_full_path_for(@default_input_file)
+            @actual_file_timestamp = @file_path.dest_full_path_for(time, @default_input_file)
           end
 
           it "returns a timestamp with rounded up seconds for a #{partition_seconds} seconds window" do
@@ -238,8 +237,7 @@ module TnS3FileUploader
     describe "#local_ip" do
       context "when udp and hostname resolvement fails" do
         before do
-          time = Time.utc(2014, 6, 18, 0, 1, 0)
-          @file_path = FilePathGenerator.new(time, { :s3_output_pattern => @s3_timestamp_pattern,
+          @file_path = FilePathGenerator.new( { :s3_output_pattern => @s3_timestamp_pattern,
                                                      :file_timestamp_resolution => 300,
                                                      :udp_resolve_ip => '10.100.1.1' } )
           
@@ -258,8 +256,7 @@ module TnS3FileUploader
     
     context "when udp fails and hostname resolvement succesds" do
       before do
-        time = Time.utc(2014, 6, 18, 0, 1, 0)
-        @file_path = FilePathGenerator.new(time, { :s3_output_pattern => @s3_timestamp_pattern,
+        @file_path = FilePathGenerator.new( { :s3_output_pattern => @s3_timestamp_pattern,
                                                    :file_timestamp_resolution => 300,
                                                    :udp_resolve_ip => '10.100.1.1' } )
         @file_path.stub(:udp_resolve_ip).and_return('a.b.c.d')
@@ -276,8 +273,7 @@ module TnS3FileUploader
     
     context "when udp resolvement succeeds" do
       before do
-        time = Time.utc(2014, 6, 18, 0, 1, 0)
-        @file_path = FilePathGenerator.new(time, { :s3_output_pattern => @s3_timestamp_pattern,
+        @file_path = FilePathGenerator.new( { :s3_output_pattern => @s3_timestamp_pattern,
                                                    :file_timestamp_resolution => 300,
                                                    :udp_resolve_ip => '10.100.1.1' } )
         @file_path.stub(:udp_resolve_ip).and_return('10.0.1.1')

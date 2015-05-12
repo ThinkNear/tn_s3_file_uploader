@@ -82,6 +82,8 @@ module TnS3FileUploader
           IPSocket.stub(:getaddress).and_return('10.0.0.1')
 
           allow(Dir).to receive(:[]).with(@file_pattern).and_return([ @file_to_upload_1, @file_to_upload_2])
+          allow(File).to receive(:mtime).with(@file_to_upload_1).and_return(Time.now)
+          allow(File).to receive(:mtime).with(@file_to_upload_2).and_return(Time.now)
 
           expect(@s3).to receive(:upload_file).once.with(@file_to_upload_1, 'bucket', @file_to_upload_1)
           expect(@s3).to receive(:upload_file).once.with(@file_to_upload_2, 'bucket', @file_to_upload_2)
@@ -108,6 +110,7 @@ module TnS3FileUploader
           IPSocket.stub(:getaddress).and_return('10.0.0.1')
 
           allow(Dir).to receive(:[]).with(@file_pattern).and_return([@file_to_upload])
+          allow(File).to receive(:mtime).with(@file_to_upload).and_return(Time.now)
           allow(@s3).to receive(:upload_file).with(any_args).twice
         end
 
@@ -127,6 +130,7 @@ module TnS3FileUploader
           IPSocket.stub(:getaddress).and_return('10.0.0.1')
 
           allow(Dir).to receive(:[]).with(@file_pattern).and_return([@file_to_upload])
+          allow(File).to receive(:mtime).with(@file_to_upload).and_return(Time.now)
           allow(@s3).to receive(:upload_file).with(any_args)
         end
 

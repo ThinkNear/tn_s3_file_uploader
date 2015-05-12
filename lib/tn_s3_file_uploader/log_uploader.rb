@@ -21,13 +21,13 @@ module TnS3FileUploader
     def upload_log_files(options)
       raise ArgumentError, 's3_output_pattern cannot be empty' if blank?(options[:s3_output_pattern])
       bucket = check_bucket_dest_path(options[:s3_output_pattern])
-      log_files = check_log_file(options[:input_file_pattern])
+      log_files = check_log_files(options[:input_file_pattern])
 
-      now = Time.now.utc
-      file_path_generator = FilePathGenerator.new(now, options)
+      file_path_generator = FilePathGenerator.new(options)
 
       log_files.each do |log_file|
-        destination_full_path = file_path_generator.dest_full_path_for(log_file)
+        time = last_modified_time(log_file)
+        destination_full_path = file_path_generator.dest_full_path_for(time, log_file)
 
         puts "Found log file #{ log_file }, formatting file name for upload to S3 bucket #{ bucket } into folder #{ destination_full_path }"
 
@@ -45,7 +45,7 @@ module TnS3FileUploader
     end
 
     private
-    def check_log_file(log_file_pattern)
+    def check_log_files(log_file_pattern)
       raise ArgumentError, 'log file pattern cannot be nil' if log_file_pattern == nil
 
       last_folder_separator = log_file_pattern.rindex('.')
@@ -61,6 +61,10 @@ module TnS3FileUploader
       path_components = bucket_dest_path.split('/')
       raise ArgumentError, "Bucket destination folder #{ bucket_dest_path } must have at least two path components, e.g. my/path." unless path_components.size > 1
       path_components.first
+    end
+
+    def last_modified_time(file)
+      File.mtime(file)
     end
 
     def blank?(str)
