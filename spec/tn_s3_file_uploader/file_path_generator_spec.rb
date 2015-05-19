@@ -235,13 +235,13 @@ module TnS3FileUploader
     end
     
     describe "#local_ip" do
-      context "when udp and hostname resolvement fails" do
+      context "when ec2 instance metadata endpoint and hostname resolvement fails" do
         before do
           @file_path = FilePathGenerator.new( { :s3_output_pattern => @s3_timestamp_pattern,
-                                                     :file_timestamp_resolution => 300,
-                                                     :udp_resolve_ip => '10.100.1.1' } )
+                                                :file_timestamp_resolution => 300,
+                                                :use_ec2_metadata_flag => true } )
           
-          @file_path.stub(:udp_resolve_ip).and_return('a.b.c.d')
+          @file_path.stub(:ec2_instance_metadata_local_ip).and_return('a.b.c.d')
           @file_path.stub(:hostname_resolve_ip).and_return('a.b.c.d')
           
           @expected_ip = '0.0.0.0'
@@ -253,36 +253,38 @@ module TnS3FileUploader
         end
       end
     end
-    
-    context "when udp fails and hostname resolvement succesds" do
+
+    context "when EC2 instance metadata endpoint fails and hostname resolvement succeeds" do
       before do
         @file_path = FilePathGenerator.new( { :s3_output_pattern => @s3_timestamp_pattern,
-                                                   :file_timestamp_resolution => 300,
-                                                   :udp_resolve_ip => '10.100.1.1' } )
-        @file_path.stub(:udp_resolve_ip).and_return('a.b.c.d')
+                                              :file_timestamp_resolution => 300,
+                                              :use_ec2_metadata_flag => true } )
+
+        @file_path.stub(:ec2_instance_metadata_local_ip).and_return('a.b.c.d')
         @file_path.stub(:hostname_resolve_ip).and_return('10.0.0.1')
 
         @expected_ip = '10.0.0.1'
         @actual_ip = @file_path.send(:local_ip)
       end
-      
+
       it "should return hostname resolved ip" do
         expect(@actual_ip).to eql(@expected_ip)
       end
     end
-    
-    context "when udp resolvement succeeds" do
+
+    context "when EC2 instance metadata endpoint succeeds" do
       before do
         @file_path = FilePathGenerator.new( { :s3_output_pattern => @s3_timestamp_pattern,
-                                                   :file_timestamp_resolution => 300,
-                                                   :udp_resolve_ip => '10.100.1.1' } )
-        @file_path.stub(:udp_resolve_ip).and_return('10.0.1.1')
+                                              :file_timestamp_resolution => 300,
+                                              :use_ec2_metadata_flag => true } )
+
+        @file_path.stub(:ec2_instance_metadata_local_ip).and_return('10.0.1.1')
 
         @expected_ip = '10.0.1.1'
         @actual_ip = @file_path.send(:local_ip)
       end
-      
-      it "should return udp resolved ip" do
+
+      it "should return the local ip from the ec2 instance metadata endpoint" do
         expect(@actual_ip).to eql(@expected_ip)
       end
     end
