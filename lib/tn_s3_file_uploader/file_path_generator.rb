@@ -1,4 +1,5 @@
 require 'rubygems'
+require 'net/http'
 
 module TnS3FileUploader
 
@@ -14,6 +15,8 @@ module TnS3FileUploader
   # file_timestamp = 20140618185540
   # date = Wed Jun 18 19:03:40 UTC 2014
   class FilePathGenerator
+
+    EC2_INSTANCE_METADATA_IP='169.254.169.254'
 
     def initialize(options)
       #Find the last rotation window
@@ -62,16 +65,15 @@ module TnS3FileUploader
       end
     end
 
-    # First tries to find local IP using UDPSocket technique.
+    # First tries to find local IP using the EC2 instance metadata endpoint.
     # In the event of a failure, we will revert to using the old
     # method of local ip retrieval.  In the event that both techniques
     # fail, we return a default value
     def local_ip
-      resolve_ip = @options[:udp_resolve_ip]
       ip_address = nil
-      
-      unless resolve_ip.nil?
-        ip_address = udp_resolve_ip(resolve_ip)
+
+      if @options[:use_ec2_metadata_flag]
+        ip_address = ec2_instance_metadata_local_ip
       end
 
       unless ip_address.nil? or valid_ip?(ip_address)
@@ -81,27 +83,14 @@ module TnS3FileUploader
       unless valid_ip?(ip_address)
         ip_address = '0.0.0.0'
       end
-      
+
       ip_address
     end
 
-    # Finds public local IP by tracing a UDP route.
-    # Note: This code does NOT make a connection or send any packets to the listed resolve_ip
-    # UDP is a stateless protocol, the connect method makes
-    # a system call to determine packet routing based on address and what interface it
-    # should bind to. addr returns an array containing the family, local port and local address
-    # The local address is the last element in the addr array.
-    def udp_resolve_ip(resolve_ip)
-      orig, Socket.do_not_reverse_lookup = Socket.do_not_reverse_lookup, true
-
-      UDPSocket.open do |s|
-        s.connect resolve_ip, 1
-        s.addr.last
-      end
-    ensure
-      Socket.do_not_reverse_lookup = orig
+    def ec2_instance_metadata_local_ip
+      Net::HTTP.get(EC2_INSTANCE_METADATA_IP, '/latest/meta-data/local-ipv4') rescue nil
     end
-    
+
     def hostname_resolve_ip
       IPSocket.getaddress(Socket.gethostname)
     end

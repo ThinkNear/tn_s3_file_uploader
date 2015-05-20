@@ -50,13 +50,11 @@ module TnS3FileUploader
         opts.on("--aws-secret-access-key AWS-SECRET-ACCESS-KEY", "Provide the AWS secret access key") do |aws_secret_access_key|
           options[:aws_secret_access_key] = aws_secret_access_key
         end
-        
-        # Default: Google's static IP
-        options[:udp_resolve_ip] = '64.233.187.99'
-        opts.on("--udp_resolve_ip RESOLVE-IP", "Lookup IP to determine active network interface local IP.") do |resolve_ip|
-          if resolve_ip =~ /\d+\.\d+\.\d+\.\d+/
-            options[:udp_resolve_ip] = resolve_ip
-          end
+
+        options[:use_ec2_metadata_flag] = true
+        opts.on("--use-ec2-metadata [USE_EC2_METADATA]", "The flag for using the ec2 instance metadata endpoint to lookup the local IP."\
+            "It is an optional parameter, default is true.") do |use_ec2_metadata|
+          options[:use_ec2_metadata_flag] = use_ec2_metadata
         end
 
         opts.on("-v", "--verbose", "Display verbose output") do |v|

@@ -25,7 +25,7 @@ module TnS3FileUploader
               :s3_output_pattern => 's3-output-pattern',
               :input_file_pattern => 'input-file-pattern',
               :file_timestamp_resolution => 300,
-              :udp_resolve_ip =>'64.233.187.99',
+              :use_ec2_metadata_flag => true,
               :delete_log_files_flag => false
           }
         end
