@@ -1,4 +1,5 @@
 require 'optparse'
+require 'tn_s3_file_uploader/version'
 
 module TnS3FileUploader
 
@@ -62,6 +63,11 @@ module TnS3FileUploader
         end
 
         opts.separator ""
+
+        opts.on_tail("--version", "Display version number") do
+          puts TnS3FileUploader::VERSION
+          exit!
+        end
 
         opts.on_tail("-h", "--help", "Show this message") do
           puts opts
