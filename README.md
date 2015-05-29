@@ -20,6 +20,6 @@ Contribute
 ----------
 Visit the [Contribute wiki page](https://github.com/ThinkNear/tn_s3_file_uploader/wiki/Contribute)
 
-Questions? Problems? New Requests?
+Questions? Problems? New requests?
 ----------------------------------
 Visit the [Troubleshooting wiki page](https://github.com/ThinkNear/tn_s3_file_uploader/wiki/Troubleshooting)
