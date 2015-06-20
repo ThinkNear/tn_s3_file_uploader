@@ -21,7 +21,7 @@ module TnS3FileUploader
     def upload_log_files(options)
       raise ArgumentError, 's3_output_pattern cannot be empty' if blank?(options[:s3_output_pattern])
       bucket = check_bucket_dest_path(options[:s3_output_pattern])
-      log_files = check_log_files(options[:input_file_pattern])
+      log_files = check_log_files(options)
 
       file_path_generator = FilePathGenerator.new(options)
 
@@ -45,14 +45,27 @@ module TnS3FileUploader
     end
 
     private
-    def check_log_files(log_file_pattern)
+    def check_log_files(options)
+      log_file_pattern = options[:input_file_pattern]
+
       raise ArgumentError, 'log file pattern cannot be nil' if log_file_pattern == nil
 
       last_folder_separator = log_file_pattern.rindex('.')
       raise ArgumentError, "#{ log_file_pattern } is not a valid path. It lacks a file extension." if last_folder_separator == nil
 
       files = Dir[log_file_pattern].entries
-      raise ArgumentError, "#{ log_file_pattern } did not match any files." if files.empty?
+      if files.empty?
+        if options[:verbose]
+          options[:context] ||= {}
+          disk_free_result = %x[df -h].split("\n")
+          options[:context][:df] = disk_free_result
+          logs_dir = %x[ls -l /media/ephemeral0/logs].split("\n")
+          options[:context][:logs_dir] = logs_dir
+          symlink_check = %x[ls -l /usr/share/tomcat7/].split("\n")
+          options[:context][:symlink_check] = symlink_check
+        end
+        raise ArgumentError, "#{ log_file_pattern } did not match any files."
+      end
 
       files
     end

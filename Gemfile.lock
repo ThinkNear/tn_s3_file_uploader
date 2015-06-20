@@ -52,3 +52,6 @@ DEPENDENCIES
   rspec
   rspec-expectations
   timecop (= 0.6.1)
+
+BUNDLED WITH
+   1.10.4

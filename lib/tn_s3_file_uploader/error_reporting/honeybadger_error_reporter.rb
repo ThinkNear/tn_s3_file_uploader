@@ -17,7 +17,7 @@ module TnS3FileUploader
     end
 
     def report_error(exception, options = {})
-      Honeybadger.notify(exception, options)
+      Honeybadger.notify(exception, parameters: options)
     end
   end
 

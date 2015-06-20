@@ -21,7 +21,8 @@ module TnS3FileUploader
           :input_file_pattern => input_file_pattern,
           :s3_output_pattern => s3_output_pattern,
           :file_timestamp_resolution => 300,
-          :delete_log_files_flag => true
+          :delete_log_files_flag => true,
+          :verbose => true
       }
     end
 
@@ -52,6 +53,11 @@ module TnS3FileUploader
         it "should raise an error if the specified log file pattern does not match any files" do
           @file_pattern = '/usr/share/tomcat7/logs/invalid-external-events.log.*.gz'
           allow(Dir).to receive(:[]).with(@file_pattern).and_return([])
+
+          #the proper way to stub calls to %x, make sure to return something
+          @log_uploader.should_receive(:`).once.with('df -h').and_return("")
+          @log_uploader.should_receive(:`).once.with('ls -l /media/ephemeral0/logs').and_return("")
+          @log_uploader.should_receive(:`).once.with('ls -l /usr/share/tomcat7/').and_return("")
 
           expect {
             @log_uploader.upload_log_files(params(@file_pattern, 'path/to/event_folder/file.tar.gz'))
