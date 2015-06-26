@@ -28,7 +28,7 @@ module TnS3FileUploader
         puts "Using:"
         puts "log file pattern = #{ @options[:input_file_pattern] }"
         puts "s3 dest folder = #{ @options[:s3_output_pattern] }"
-        puts "file timestamp resolution = #{ options[:file_timestamp_resolution] }"
+        puts "file timestamp resolution = #{ @options[:file_timestamp_resolution] }"
       end
 
       s3_client = create_s3_client
