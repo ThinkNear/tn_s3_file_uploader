@@ -15,5 +15,12 @@ Gem::Specification.new do |s|
   s.add_dependency('honeybadger', '~> 1.15')
   s.add_dependency('aws-sdk', '~> 1.35')
 
+  s.add_development_dependency('rake')
+  s.add_development_dependency('timecop')
+  s.add_development_dependency('rspec')
+  s.add_development_dependency('rspec-expectations')
+  s.add_development_dependency('cucumber')
+  s.add_development_dependency('fakes3', '= 0.1.5.2') # need to specify that to avoid any surprises with our enhanced features rake task
+
   s.executables << 'tn_s3_file_uploader'
 end
