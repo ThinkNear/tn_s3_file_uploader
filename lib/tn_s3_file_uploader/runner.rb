@@ -17,8 +17,11 @@ module TnS3FileUploader
       puts "Running TnS3FileUploader..." if @options[:verbose]
 
       upload
+    rescue => e
+      @error_report_manager.report_error(e, { :options => @options } )
     rescue Exception => e
       @error_report_manager.report_error(e, { :options => @options } )
+      raise
     end
 
     private
