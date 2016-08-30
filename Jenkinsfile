@@ -1,37 +1,11 @@
 #!groovy
 
-node {
-    currentBuild.result = 'SUCCESS'
-    try {
-        stage 'Checkout'
-        deleteDir()
-        checkout scm
+rubyGem {
+    test_script = """
+    #!/bin/bash -l
+    rvm use .
+    bundle install
+    """
 
-        stage 'Test'
-        sh """
-        #!/bin/bash -l
-        rvm use .
-        bundle install
-        """
-
-        stage 'Build'
-        sh 'gem build *.gemspec'
-
-        stage 'Publish'
-        def buildInfo = uploadGem()
-
-        stage 'Promote'
-        promoteGem(buildInfo)
-
-        stage 'Notify'
-        emailDefault('software@thinknear.com')
-
-    } catch (err) {
-        currentBuild.result = 'FAILURE'
-        println(err.toString());
-        println(err.getMessage());
-        println(err.getStackTrace());
-        emailDefault('software@thinknear.com')
-    }
+    build_script = 'gem build tn_s3_file_uploader.gemspec'
 }
-
