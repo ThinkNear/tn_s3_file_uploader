@@ -29,7 +29,7 @@ module TnS3FileUploader
         time = last_modified_time(log_file)
         destination_full_path = file_path_generator.dest_full_path_for(time, log_file)
 
-        puts "Found log file #{ log_file }, formatting file name for upload to S3 bucket #{ bucket } into folder #{ destination_full_path }"
+        Log.log "Found log file #{ log_file }, formatting file name for upload to S3 bucket #{ bucket } into folder #{ destination_full_path }"
 
         # Note no leading or trailing slashes - this will break the upload to S3 (see our s3.rb)
         begin
@@ -86,7 +86,10 @@ module TnS3FileUploader
 
     def delete_file(file)
       file_path = Pathname.new(file)
-      File.delete(file) if file_path.file?
+      if file_path.file?
+        File.delete(file)
+        Log.log "Deleted file #{file}"
+      end
     end
   end
 

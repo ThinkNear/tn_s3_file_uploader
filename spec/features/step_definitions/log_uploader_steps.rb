@@ -2,6 +2,7 @@ require 'aws-sdk'
 require 'tn_s3_file_uploader/log_uploader'
 require 'tn_s3_file_uploader/s3'
 require 'tn_s3_file_uploader/file_path_generator'
+require 'tn_s3_file_uploader/log'
 
 
 Before do

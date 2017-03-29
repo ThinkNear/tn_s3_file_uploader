@@ -2,6 +2,7 @@ require 'rspec'
 require 'tn_s3_file_uploader'
 require 'tn_s3_file_uploader/log_uploader'
 require 'tn_s3_file_uploader/runner'
+require 'tn_s3_file_uploader/log'
 
 module TnS3FileUploader
 
