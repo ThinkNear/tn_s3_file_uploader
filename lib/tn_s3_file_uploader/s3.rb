@@ -37,9 +37,11 @@ module TnS3FileUploader
         s3_bucket = @s3_client.buckets[bucket]
         s3_file_path = s3_bucket.objects[dest_full_path]
 
-        puts "Uploading file #{file} to S3 bucket #{bucket} and path #{dest_full_path}"
+        Log.log "Uploading file #{file} to S3 bucket #{bucket} and path #{dest_full_path}"
 
         s3_file_path.write(File.open(file, 'rb'))
+
+        Log.log "Finished Uploading file #{file} to S3 bucket #{bucket} and path #{dest_full_path}"
       rescue StandardError, Timeout::Error => e
         if retry_count < MAX_RETRIES
           #This fixes a bug where the credentials may have rotated on the EC2 instance but the old values

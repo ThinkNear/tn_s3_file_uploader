@@ -14,7 +14,7 @@ module TnS3FileUploader
     def run
       add_log_error_reporter
       add_honeybadger
-      puts "Running TnS3FileUploader..." if @options[:verbose]
+      Log.log "Running TnS3FileUploader..." if @options[:verbose]
 
       upload
     rescue => e
@@ -28,10 +28,10 @@ module TnS3FileUploader
 
     def upload
       if @options[:verbose]
-        puts "Using:"
-        puts "log file pattern = #{ @options[:input_file_pattern] }"
-        puts "s3 dest folder = #{ @options[:s3_output_pattern] }"
-        puts "file timestamp resolution = #{ @options[:file_timestamp_resolution] }"
+        Log.log "Using:"
+        Log.log "log file pattern = #{ @options[:input_file_pattern] }"
+        Log.log "s3 dest folder = #{ @options[:s3_output_pattern] }"
+        Log.log "file timestamp resolution = #{ @options[:file_timestamp_resolution] }"
       end
 
       s3_client = create_s3_client
