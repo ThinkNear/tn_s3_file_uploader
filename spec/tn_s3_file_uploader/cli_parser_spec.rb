@@ -44,7 +44,7 @@ module TnS3FileUploader
       end
 
       context 'when a zero timestamp resolution is provided' do
-        before { @valid_args << '--file-timestamp-resolution=0' }
+        before { @valid_args << '--file-timestamp-resoluti' }
 
         it 'defaults to a file timestamp resolution of 300 (5 minutes)' do
           expect(@cli_parser.parse_cmd_line(@valid_args)).to include(:file_timestamp_resolution => 300)
