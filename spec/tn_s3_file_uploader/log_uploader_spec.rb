@@ -22,6 +22,7 @@ module TnS3FileUploader
           :s3_output_pattern => s3_output_pattern,
           :file_timestamp_resolution => 300,
           :delete_log_files_flag => true,
+          :fixed_time => "",
           :verbose => true
       }
     end
@@ -144,6 +145,66 @@ module TnS3FileUploader
           expect(@s3).to receive(:upload_file).once.with(@file_to_upload, 'bucket', @expected_destination_path)
 
           @log_uploader.upload_log_files(params(@file_pattern, @s3_output_pattern))
+        end
+      end
+
+      context "Log file pattern using fixed_time" do
+        before do
+          @file_pattern = '/usr/share/tomcat7/logs/invalid-external-events.log.*.lzo'
+          @file_to_upload = '/usr/share/tomcat7/logs/invalid-external-events.log.1.lzo'
+          @s3_output_pattern = 'bucket/some/path/to/upload/%{file-name}.%{file-timestamp}.%{file-extension}'
+          IPSocket.stub(:getaddress).and_return('10.0.0.1')
+
+          allow(Dir).to receive(:[]).with(@file_pattern).and_return([@file_to_upload])
+          allow(File).to receive(:mtime).with(@file_to_upload).and_return(Time.now)
+          allow(@s3).to receive(:upload_file).with(any_args)
+        end
+
+        it "should upload a file with generated name which includes 20180315025500" do
+          @expected_destination_path = 'some/path/to/upload/invalid-external-events.log.1.20180315025500.lzo'
+          expect(@s3).to receive(:upload_file).once.with(@file_to_upload, 'bucket', @expected_destination_path)
+
+          @log_uploader.upload_log_files({
+                                             :input_file_pattern => @file_pattern,
+                                             :s3_output_pattern => @s3_output_pattern,
+                                             :file_timestamp_resolution => 300,
+                                             :delete_log_files_flag => true,
+                                             :fixed_time => "2018-03-15_03:03:03",
+                                             :verbose => true
+                                         }
+          )
+        end
+
+        it "should upload a file with generated name which includes 20180319184000" do
+          @expected_destination_path = 'some/path/to/upload/invalid-external-events.log.1.20180319184000.lzo'
+          expect(@s3).to receive(:upload_file).once.with(@file_to_upload, 'bucket', @expected_destination_path)
+
+          @log_uploader.upload_log_files({
+                                             :input_file_pattern => @file_pattern,
+                                             :s3_output_pattern => @s3_output_pattern,
+                                             :file_timestamp_resolution => 300,
+                                             :delete_log_files_flag => true,
+                                             :fixed_time => "2018-03-19_18:45:21",
+                                             :verbose => true
+                                         }
+          )
+        end
+
+        it "should upload a file with generated name  which includes last modified time of file" do
+          time = File.mtime(@file_to_upload) - 300
+          time = Time.at((time.to_f / 300).floor * 300).utc
+          file_timestamp = time.strftime('%Y%m%d%H%M%S')
+          @expected_destination_path = 'some/path/to/upload/invalid-external-events.log.1.' + file_timestamp + '.lzo'
+          expect(@s3).to receive(:upload_file).once.with(@file_to_upload, 'bucket', @expected_destination_path)
+
+          @log_uploader.upload_log_files({
+                                             :input_file_pattern => @file_pattern,
+                                             :s3_output_pattern => @s3_output_pattern,
+                                             :file_timestamp_resolution => 300,
+                                             :delete_log_files_flag => true,
+                                             :verbose => true
+                                         }
+          )
         end
       end
     end

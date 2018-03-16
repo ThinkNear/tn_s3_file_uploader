@@ -31,6 +31,12 @@ module TnS3FileUploader
           options[:delete_log_files_flag] = delete_log_files_flag
         end
 
+        options[:fixed_time] = ""
+        opts.on("-t", "--fixed-time [FIXED_TIME]", "The time which will be added to generated log name"\
+            "It is an optional parameter. Use this argument to override time used to specify the resolution for the timestamp, if this option is not provided the time to use will be script run time.") do |fixed_time|
+          options[:fixed_time] = fixed_time
+        end
+
         options[:file_timestamp_resolution] = 300
         opts.on("--file-timestamp-resolution RES", Integer, "The resolution of the destination filename in seconds (positive non-zero integer)") do |file_timestamp_resolution|
           if valid_seconds?(file_timestamp_resolution)
