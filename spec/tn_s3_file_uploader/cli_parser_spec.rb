@@ -26,6 +26,7 @@ module TnS3FileUploader
               :input_file_pattern => 'input-file-pattern',
               :file_timestamp_resolution => 300,
               :use_ec2_metadata_flag => true,
+              :fixed_time => '',
               :delete_log_files_flag => false
           }
         end

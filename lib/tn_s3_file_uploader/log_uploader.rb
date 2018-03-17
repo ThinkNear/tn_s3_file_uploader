@@ -26,7 +26,11 @@ module TnS3FileUploader
       file_path_generator = FilePathGenerator.new(options)
 
       log_files.each do |log_file|
-        time = last_modified_time(log_file)
+        if options[:fixed_time].nil? || options[:fixed_time].empty?
+          time = last_modified_time(log_file)
+        else
+          time = DateTime.strptime(options[:fixed_time], '%Y-%m-%d_%H:%M:%S').to_time
+        end
         destination_full_path = file_path_generator.dest_full_path_for(time, log_file)
 
         Log.log "Found log file #{ log_file }, formatting file name for upload to S3 bucket #{ bucket } into folder #{ destination_full_path }"
