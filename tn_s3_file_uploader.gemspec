@@ -13,7 +13,7 @@ Gem::Specification.new do |s|
   s.license     = 'Copyright (c) ThinkNear 2014-2015, Licensed under APLv2.0'
 
   s.add_dependency('honeybadger', '~> 1.15')
-  s.add_dependency('aws-sdk', '~> 1.35')
+  s.add_dependency('aws-sdk', '~> 1.67')
 
   s.add_development_dependency('rake')
   s.add_development_dependency('timecop')
